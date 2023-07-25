@@ -1,9 +1,28 @@
-import React from "react";
-
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
 
-export default function Create() {
+export default function Create({ posts, setPosts }) {
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  const handleAddClick = () => {
+    // 새로운 게시물 객체 생성
+    const newPost = {
+      id: posts.length + 1, // 기존 게시물 개수 + 1을 새로운 게시물의 id로 설정
+      title: title,
+      content: content,
+    };
+
+    // 기존 게시물 배열에 새로운 게시물 추가
+    setPosts([...posts, newPost]);
+
+    // 추가 후 메인 페이지로 이동
+    navigate("/");
+  };
+
   return (
     <>
       <Header />
@@ -17,7 +36,7 @@ export default function Create() {
           }}
           onSubmit={(e) => {
             e.preventDefault();
-            console.log("제출!");
+            handleAddClick(); // 폼 제출 시 handleAddClick 함수 호출
           }}
         >
           <div>
@@ -32,6 +51,8 @@ export default function Create() {
                 padding: "8px",
                 boxSizing: "border-box",
               }}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)} // 입력한 제목 업데이트
             />
           </div>
           <div
@@ -51,6 +72,8 @@ export default function Create() {
                 padding: "12px",
                 boxSizing: "border-box",
               }}
+              value={content}
+              onChange={(e) => setContent(e.target.value)} // 입력한 내용 업데이트
             />
           </div>
           <button
@@ -63,6 +86,7 @@ export default function Create() {
               backgroundColor: "skyblue",
               cursor: "pointer",
             }}
+            type="submit" // 버튼 클릭 시 폼 제출
           >
             추가하기
           </button>

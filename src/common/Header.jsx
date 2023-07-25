@@ -1,9 +1,21 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 
 export default function Header() {
   const navigate = useNavigate();
+
+  const handleMainClick = () => {
+    navigate("/");
+  };
+
+  const handleLoginClick = () => {
+    navigate("/login");
+  };
+
+  const handleSignupClick = () => {
+    navigate("/signup");
+  };
   return (
     <header
       style={{
@@ -15,6 +27,7 @@ export default function Header() {
       }}
     >
       <h1
+        onClick={handleMainClick}
         style={{
           color: "gray",
           cursor: "pointer",
@@ -28,8 +41,12 @@ export default function Header() {
           gap: "12px",
         }}
       >
-        <Link to="/login">로그인</Link>
-        <Link to="/signup">회원가입</Link>
+        <h5 onClick={handleLoginClick} style={{ cursor: "pointer" }}>
+          로그인
+        </h5>
+        <h5 onClick={handleSignupClick} style={{ cursor: "pointer" }}>
+          회원가입
+        </h5>
       </div>
     </header>
   );

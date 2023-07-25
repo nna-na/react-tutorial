@@ -3,8 +3,24 @@ import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
 
-export default function Main() {
+export default function Main({ posts, setPosts }) {
   const navigate = useNavigate();
+
+  const handleEditClick = (postId) => {
+    navigate(`/edit/${postId}`);
+  };
+
+  const handleCreateClick = () => {
+    navigate(`/create`);
+  };
+
+  const handleDeleteClick = (postId) => {
+    // 주어진 postId에 해당하는 게시물을 posts 배열에서 필터링하여 제외
+    const updatedPosts = posts.filter((post) => post.id !== postId);
+    setPosts(updatedPosts);
+    navigate("/");
+  };
+
   return (
     <>
       <Header />
@@ -17,9 +33,7 @@ export default function Main() {
           }}
         >
           <button
-            onClick={() => {
-              navigate("/create");
-            }}
+            onClick={handleCreateClick}
             style={{
               border: "none",
               padding: "8px",
@@ -32,9 +46,13 @@ export default function Main() {
             추가
           </button>
         </div>
-        {[1, 2, 3, 4].map((item) => (
+
+        {/* map 함수: 배열의 각 요소들을 순회하면서 각 요소를 변환하여 새로운 배열을 생성하는 메서드*/}
+        {posts.map((post) => (
+          // posts 배열의 각 데이터를 순회하면서 정보를 이용하여 게시물 카드를 생성하고 있다.
+          // post 변수로 접근하여 게시물의 정보를 표시하고 있다.
           <div
-            key={item}
+            key={post.id}
             style={{
               backgroundColor: "#EEEEEE",
               height: "100px",
@@ -46,7 +64,7 @@ export default function Main() {
           >
             <div
               onClick={() => {
-                navigate("/detail/1");
+                navigate(`/detail/${post.id}`);
               }}
               style={{
                 flex: 4,
@@ -54,7 +72,7 @@ export default function Main() {
                 cursor: "pointer",
               }}
             >
-              <h2>제목</h2>
+              <h2>{post.title}</h2>
               <p
                 style={{
                   width: "300px",
@@ -63,10 +81,7 @@ export default function Main() {
                   whiteSpace: "nowrap",
                 }}
               >
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit.Lorem
-                ipsum dolor, sit amet consectetur adipisicing elit.Lorem ipsum
-                dolor, sit amet consectetur adipisicing elit.Lorem ipsum dolor,
-                sit amet consectetur adipisicing elit.
+                {post.content}
               </p>
             </div>
             <div
@@ -79,12 +94,9 @@ export default function Main() {
                 gap: "12px",
               }}
             >
-              <div>작성자</div>
               <div>
                 <button
-                  onClick={() => {
-                    navigate("/edit");
-                  }}
+                  onClick={() => handleEditClick(post.id)}
                   style={{
                     border: "none",
                     padding: "8px",
@@ -98,9 +110,7 @@ export default function Main() {
                   수정
                 </button>
                 <button
-                  onClick={() => {
-                    alert("삭제할까?");
-                  }}
+                  onClick={() => handleDeleteClick(post.id)}
                   style={{
                     border: "none",
                     padding: "8px",
