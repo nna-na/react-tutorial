@@ -12,8 +12,7 @@ export default function Edit({ posts, setPosts }) {
   const { id } = useParams();
 
   // id에 해당하는 게시물을 찾아옴
-  const postId = parseInt(id);
-  const post = posts.find((post) => post.id === postId);
+  const post = posts.find((post) => post.id === id);
 
   // state를 사용하여 기본값 설정
   const [title, setTitle] = useState(post.title);
@@ -32,6 +31,9 @@ export default function Edit({ posts, setPosts }) {
 
     // 기존의 posts 배열이 수정된 게시물 목록으로 업데이트
     setPosts(updatedPosts);
+
+    // 수정 완료 알림창
+    window.alert("수정되었습니다.");
 
     // 수정 후 자동으로 메인페이지로 이동
     navigate("/");

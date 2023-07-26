@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
+import { nanoid } from "nanoid";
 
 export default function Create({ posts, setPosts }) {
   const navigate = useNavigate();
@@ -11,9 +12,10 @@ export default function Create({ posts, setPosts }) {
   const handleAddClick = () => {
     // 새로운 게시물 객체 생성
     const newPost = {
-      id: posts.length + 1, // 기존 게시물 개수 + 1을 새로운 게시물의 id로 설정
+      id: nanoid(),
       title: title,
       content: content,
+      author: "",
     };
 
     // 기존 게시물 배열에 새로운 게시물 추가

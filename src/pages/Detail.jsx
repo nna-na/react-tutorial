@@ -1,19 +1,24 @@
 import React from "react";
 import Header from "../common/Header";
 import Container from "../common/Container";
-import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-export default function Detail({ posts, setPosts }) {
-  const { id } = useParams();
-
-  const post = posts.find((post) => post.id === parseInt(id));
-
+export default function Detail({ posts, handleDeleteClick }) {
   const navigate = useNavigate();
 
-  const handleDeleteClick = () => {
-    const updatedPosts = posts.filter((p) => p.id !== post.id);
-    setPosts(updatedPosts);
+  const { id } = useParams();
+
+  const post = posts.find((post) => post.id === id);
+
+  const handleEditClick = () => {
+    navigate(`/edit/${post.id}`);
+  };
+
+  // 상위 컴포넌트에서 전달된 handleDeleteClick 함수 호출
+  const handleDelete = () => {
+    handleDeleteClick(post.id);
+    // 삭제 후, 메인 페이지로 이동하도록 처리
     navigate("/");
   };
 
@@ -49,7 +54,7 @@ export default function Detail({ posts, setPosts }) {
         >
           <button
             onClick={() => {
-              navigate(`/edit/${post.id}`);
+              navigate(handleEditClick);
             }}
             style={{
               border: "none",
@@ -64,7 +69,7 @@ export default function Detail({ posts, setPosts }) {
             수정
           </button>
           <button
-            onClick={handleDeleteClick}
+            onClick={handleDelete}
             style={{
               border: "none",
               padding: "8px",

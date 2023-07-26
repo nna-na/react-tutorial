@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
 
-export default function Main({ posts, setPosts }) {
+export default function Main({ posts, handleDeleteClick }) {
   const navigate = useNavigate();
 
   const handleEditClick = (postId) => {
@@ -12,13 +12,6 @@ export default function Main({ posts, setPosts }) {
 
   const handleCreateClick = () => {
     navigate(`/create`);
-  };
-
-  const handleDeleteClick = (postId) => {
-    // 주어진 postId에 해당하는 게시물을 posts 배열에서 필터링하여 제외
-    const updatedPosts = posts.filter((post) => post.id !== postId);
-    setPosts(updatedPosts);
-    navigate("/");
   };
 
   return (
@@ -110,7 +103,7 @@ export default function Main({ posts, setPosts }) {
                   수정
                 </button>
                 <button
-                  onClick={() => handleDeleteClick(post.id)}
+                  onClick={() => handleDeleteClick(post.id)} // 상위 컴포넌트에서 전달된 handleDeleteClick 함수 호출
                   style={{
                     border: "none",
                     padding: "8px",
