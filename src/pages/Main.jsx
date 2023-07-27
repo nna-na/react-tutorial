@@ -2,14 +2,25 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
+import { useDispatch, useSelector } from "react-redux";
+import { deletePost } from "..";
 
-export default function Main({ posts, handleDeleteClick }) {
+export default function Main() {
+  // 1. Redux 스토어의 상태(posts 배열)를 가져온다.
+  const posts = useSelector((state) => state.posts);
+
+  // 2. Redux 스토어의 액션을 디스패치하는 함수를 가져온다.
+  const dispatch = useDispatch();
+
+  // 3. React Router의 navigate 함수를 가져온다.
   const navigate = useNavigate();
 
+  // 4. 해당 게시물의 수정 페이지로 이동
   const handleEditClick = (postId) => {
     navigate(`/edit/${postId}`);
   };
 
+  // 5. 새로운 게시물 추가 페이지로 이동
   const handleCreateClick = () => {
     navigate(`/create`);
   };
@@ -40,10 +51,8 @@ export default function Main({ posts, handleDeleteClick }) {
           </button>
         </div>
 
-        {/* map 함수: 배열의 각 요소들을 순회하면서 각 요소를 변환하여 새로운 배열을 생성하는 메서드*/}
+        {/* 6. map 함수를 사용하여 게시물 목록(posts 배열)을 순회하여 게시물 카드를 생성 */}
         {posts.map((post) => (
-          // posts 배열의 각 데이터를 순회하면서 정보를 이용하여 게시물 카드를 생성하고 있다.
-          // post 변수로 접근하여 게시물의 정보를 표시하고 있다.
           <div
             key={post.id}
             style={{
@@ -103,7 +112,10 @@ export default function Main({ posts, handleDeleteClick }) {
                   수정
                 </button>
                 <button
-                  onClick={() => handleDeleteClick(post.id)} // 상위 컴포넌트에서 전달된 handleDeleteClick 함수 호출
+                  onClick={() => {
+                    dispatch(deletePost(post.id));
+                    alert("삭제되었습니다.");
+                  }}
                   style={{
                     border: "none",
                     padding: "8px",

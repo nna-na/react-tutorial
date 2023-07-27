@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
 import { nanoid } from "nanoid";
+import { useDispatch } from "react-redux";
+import { addPost } from "..";
 
-export default function Create({ posts, setPosts }) {
+export default function Create() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
 
-  const handleAddClick = () => {
+  const handleAddClick = (title, content) => {
     // 새로운 게시물 객체 생성
     const newPost = {
       id: nanoid(),
@@ -18,8 +19,8 @@ export default function Create({ posts, setPosts }) {
       author: "",
     };
 
-    // 기존 게시물 배열에 새로운 게시물 추가
-    setPosts([...posts, newPost]);
+    // addPost 액션을 dispatch하여 새로운 게시물을 추가
+    dispatch(addPost(newPost));
 
     // 추가 후 메인 페이지로 이동
     navigate("/");
@@ -38,11 +39,14 @@ export default function Create({ posts, setPosts }) {
           }}
           onSubmit={(e) => {
             e.preventDefault();
-            handleAddClick(); // 폼 제출 시 handleAddClick 함수 호출
+            const title = e.target.title.value;
+            const content = e.target.content.value;
+            handleAddClick(title, content); // 폼 제출 시 handleAddClick 함수 호출
           }}
         >
           <div>
             <input
+              name="title"
               placeholder="제목"
               style={{
                 width: "100%",
@@ -53,8 +57,6 @@ export default function Create({ posts, setPosts }) {
                 padding: "8px",
                 boxSizing: "border-box",
               }}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)} // 입력한 제목 업데이트
             />
           </div>
           <div
@@ -63,6 +65,7 @@ export default function Create({ posts, setPosts }) {
             }}
           >
             <textarea
+              name="content"
               placeholder="내용"
               style={{
                 resize: "none",
@@ -74,8 +77,6 @@ export default function Create({ posts, setPosts }) {
                 padding: "12px",
                 boxSizing: "border-box",
               }}
-              value={content}
-              onChange={(e) => setContent(e.target.value)} // 입력한 내용 업데이트
             />
           </div>
           <button

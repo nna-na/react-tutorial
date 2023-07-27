@@ -3,8 +3,12 @@ import Header from "../common/Header";
 import Container from "../common/Container";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { deletePost } from "..";
 
-export default function Detail({ posts, handleDeleteClick }) {
+export default function Detail() {
+  const posts = useSelector((state) => state.posts);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { id } = useParams();
@@ -15,11 +19,10 @@ export default function Detail({ posts, handleDeleteClick }) {
     navigate(`/edit/${post.id}`);
   };
 
-  // 상위 컴포넌트에서 전달된 handleDeleteClick 함수 호출
   const handleDelete = () => {
-    handleDeleteClick(post.id);
-    // 삭제 후, 메인 페이지로 이동하도록 처리
+    dispatch(deletePost(post.id));
     navigate("/");
+    alert("삭제되었습니다.");
   };
 
   return (
@@ -53,9 +56,7 @@ export default function Detail({ posts, handleDeleteClick }) {
           }}
         >
           <button
-            onClick={() => {
-              navigate(handleEditClick);
-            }}
+            onClick={handleEditClick}
             style={{
               border: "none",
               padding: "8px",
