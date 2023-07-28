@@ -3,7 +3,7 @@ import Header from "../common/Header";
 import Container from "../common/Container";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { updatePost } from "..";
+import { updatePost } from "../redux/modules/posts";
 
 export default function Edit() {
   const posts = useSelector((state) => state.posts);
@@ -35,6 +35,18 @@ export default function Edit() {
     // 수정 후 자동으로 메인페이지로 이동
     navigate("/");
   };
+
+  // post가 존재하지 않는 경우, 메시지를 화면에 표시하도록 처리
+  if (!post) {
+    return (
+      <Fragment>
+        <Header />
+        <Container>
+          <p>해당 게시물이 존재하지 않습니다.</p>
+        </Container>
+      </Fragment>
+    );
+  }
 
   return (
     <Fragment>

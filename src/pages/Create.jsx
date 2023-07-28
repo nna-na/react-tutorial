@@ -4,7 +4,7 @@ import Header from "../common/Header";
 import Container from "../common/Container";
 import { nanoid } from "nanoid";
 import { useDispatch } from "react-redux";
-import { addPost } from "..";
+import { addPost } from "../redux/modules/posts";
 
 export default function Create() {
   const dispatch = useDispatch();
@@ -39,6 +39,8 @@ export default function Create() {
           }}
           onSubmit={(e) => {
             e.preventDefault();
+            // 이벤트 객체(e)의 target 속성을 통해 입력 폼의 title(input) 요소에 접근하여
+            // 사용자가 입력한 값을 가져오는 부분
             const title = e.target.title.value;
             const content = e.target.content.value;
             handleAddClick(title, content); // 폼 제출 시 handleAddClick 함수 호출

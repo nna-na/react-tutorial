@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
 import { useDispatch, useSelector } from "react-redux";
-import { deletePost } from "..";
+import { deletePost } from "../redux/modules/posts";
 
 export default function Main() {
   // 1. Redux 스토어의 상태(posts 배열)를 가져온다.
@@ -23,6 +23,15 @@ export default function Main() {
   // 5. 새로운 게시물 추가 페이지로 이동
   const handleCreateClick = () => {
     navigate(`/create`);
+  };
+
+  const handleDelete = (postId) => {
+    const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
+    if (confirmDelete) {
+      dispatch(deletePost(postId));
+      navigate("/");
+      alert("삭제되었습니다.");
+    }
   };
 
   return (
@@ -52,7 +61,8 @@ export default function Main() {
         </div>
 
         {/* 6. map 함수를 사용하여 게시물 목록(posts 배열)을 순회하여 게시물 카드를 생성 */}
-        {posts.map((post) => (
+        {/* posts 배열이 존재하지 않는 경우 map 함수가 동작하지 않도록 옵셔널 체이닝이 적용 */}
+        {posts?.map((post) => (
           <div
             key={post.id}
             style={{
@@ -74,7 +84,9 @@ export default function Main() {
                 cursor: "pointer",
               }}
             >
-              <h2>{post.title}</h2>
+              {/* post 객체가 존재하지 않거나 프로퍼티가 없는 경우, 
+              에러 대신 undefined를 반환하여 안전하게 렌더링 */}
+              <h2>{post?.title}</h2>
               <p
                 style={{
                   width: "300px",
@@ -83,7 +95,7 @@ export default function Main() {
                   whiteSpace: "nowrap",
                 }}
               >
-                {post.content}
+                {post?.content}
               </p>
             </div>
             <div
@@ -112,10 +124,7 @@ export default function Main() {
                   수정
                 </button>
                 <button
-                  onClick={() => {
-                    dispatch(deletePost(post.id));
-                    alert("삭제되었습니다.");
-                  }}
+                  onClick={() => handleDelete(post.id)}
                   style={{
                     border: "none",
                     padding: "8px",

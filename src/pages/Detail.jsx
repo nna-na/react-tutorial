@@ -4,7 +4,7 @@ import Container from "../common/Container";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { deletePost } from "..";
+import { deletePost } from "../redux/modules/posts";
 
 export default function Detail() {
   const posts = useSelector((state) => state.posts);
@@ -20,9 +20,12 @@ export default function Detail() {
   };
 
   const handleDelete = () => {
-    dispatch(deletePost(post.id));
-    navigate("/");
-    alert("삭제되었습니다.");
+    const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
+    if (confirmDelete) {
+      dispatch(deletePost(post.id));
+      navigate("/");
+      alert("삭제되었습니다.");
+    }
   };
 
   return (
