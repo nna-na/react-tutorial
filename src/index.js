@@ -8,10 +8,13 @@ import { Provider } from "react-redux";
 // modules/posts.js에서 추출한 posts 리듀서를 가져온다.
 import posts from "./redux/modules/posts";
 
+import userReducer from "./redux/modules/user";
+
 // 2. Redux의 configureStore 함수를 사용하여 스토어를 생성한다.
 const store = configureStore({
   reducer: {
     posts: posts, // 위에서 생성한 posts 리듀서를 스토어에 등록한다.
+    user: userReducer,
   },
 });
 

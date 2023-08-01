@@ -1,36 +1,85 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
 import { useDispatch, useSelector } from "react-redux";
 import { deletePost } from "../redux/modules/posts";
+import { setUser, setLoggedIn } from "../redux/modules/user"; // 추가된 import
+import { auth } from "../firebase";
+import { RenderIfLoggedIn } from "../redux/modules/renderUtils";
+import { checkUserAuthorization } from "../redux/modules/authUtils";
 
 export default function Main() {
-  // 1. Redux 스토어의 상태(posts 배열)를 가져온다.
+  // Redux 스토어의 상태(posts 배열)를 가져온다.
   const posts = useSelector((state) => state.posts);
 
-  // 2. Redux 스토어의 액션을 디스패치하는 함수를 가져온다.
+  // Redux 스토어의 사용자 로그인 상태 및 사용자 정보를 가져온다.
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+  const user = useSelector((state) => state.user.user);
+
+  // Redux 스토어의 액션을 디스패치하는 함수를 가져온다.
   const dispatch = useDispatch();
 
-  // 3. React Router의 navigate 함수를 가져온다.
+  // React Router의 navigate 함수를 가져온다.
   const navigate = useNavigate();
 
-  // 4. 해당 게시물의 수정 페이지로 이동
-  const handleEditClick = (postId) => {
-    navigate(`/edit/${postId}`);
-  };
+  useEffect(() => {
+    // 인증 상태 변경 감지를 위해 Firebase의 onAuthStateChanged를 사용
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      // 사용자 로그인 상태를 Redux 스토어에 업데이트
+      dispatch(setLoggedIn(!!user)); // 사용자가 로그인한 경우 true, 로그아웃한 경우 false
 
-  // 5. 새로운 게시물 추가 페이지로 이동
+      if (user) {
+        // 사용자가 로그인한 경우, 사용자 정보를 Redux 스토어에 업데이트
+        dispatch(setUser(user));
+      }
+    });
+
+    // 컴포넌트 언마운트 시 인증 상태 변경 감지 정리
+    return () => unsubscribe();
+  }, [dispatch]);
+
+  // 새로운 게시물 추가 페이지로 이동
   const handleCreateClick = () => {
-    navigate(`/create`);
+    if (isLoggedIn) {
+      // 로그인 상태일 경우 추가 버튼 동작
+      navigate("/create");
+    } else {
+      // 로그인 상태가 아닐 경우 알림 창 표시
+      alert("로그인이 필요한 기능입니다.");
+      // 로그인 페이지로 이동하도록 코드 추가
+      navigate("/login");
+    }
   };
 
+  // 4. 해당 게시물의 수정 페이지로 이동 (수정 버튼 클릭 시 호출)
+  const handleEditClick = (postId) => {
+    const selectedPost = posts.find((post) => post.id === postId);
+
+    if (isLoggedIn) {
+      const postAuthor = selectedPost.author;
+
+      if (checkUserAuthorization(isLoggedIn, user, postAuthor, navigate)) {
+        navigate(`/edit/${postId}`);
+      }
+    }
+  };
+
+  // 해당 게시물 삭제 (삭제 버튼 클릭 시 호출)
   const handleDelete = (postId) => {
-    const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
-    if (confirmDelete) {
-      dispatch(deletePost(postId));
-      navigate("/");
-      alert("삭제되었습니다.");
+    const selectedPost = posts.find((post) => post.id === postId);
+
+    if (isLoggedIn) {
+      const postAuthor = selectedPost.author;
+
+      if (checkUserAuthorization(isLoggedIn, user, postAuthor, navigate)) {
+        const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
+        if (confirmDelete) {
+          dispatch(deletePost(postId));
+          navigate("/");
+          alert("삭제되었습니다.");
+        }
+      }
     }
   };
 
@@ -45,19 +94,21 @@ export default function Main() {
             padding: "12px",
           }}
         >
-          <button
-            onClick={handleCreateClick}
-            style={{
-              border: "none",
-              padding: "8px",
-              borderRadius: "6px",
-              backgroundColor: "skyblue",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            추가
-          </button>
+          <RenderIfLoggedIn isLoggedIn={isLoggedIn}>
+            <button
+              onClick={handleCreateClick}
+              style={{
+                border: "none",
+                padding: "8px",
+                borderRadius: "6px",
+                backgroundColor: "skyblue",
+                color: "white",
+                cursor: "pointer",
+              }}
+            >
+              추가
+            </button>
+          </RenderIfLoggedIn>
         </div>
 
         {/* 6. map 함수를 사용하여 게시물 목록(posts 배열)을 순회하여 게시물 카드를 생성 */}
@@ -109,33 +160,37 @@ export default function Main() {
               }}
             >
               <div>
-                <button
-                  onClick={() => handleEditClick(post.id)}
-                  style={{
-                    border: "none",
-                    padding: "8px",
-                    borderRadius: "6px",
-                    backgroundColor: "orange",
-                    color: "white",
-                    cursor: "pointer",
-                    marginRight: "6px",
-                  }}
-                >
-                  수정
-                </button>
-                <button
-                  onClick={() => handleDelete(post.id)}
-                  style={{
-                    border: "none",
-                    padding: "8px",
-                    borderRadius: "6px",
-                    backgroundColor: "red",
-                    color: "white",
-                    cursor: "pointer",
-                  }}
-                >
-                  삭제
-                </button>
+                <RenderIfLoggedIn isLoggedIn={isLoggedIn}>
+                  <button
+                    onClick={() => handleEditClick(post.id)}
+                    style={{
+                      border: "none",
+                      padding: "8px",
+                      borderRadius: "6px",
+                      backgroundColor: "orange",
+                      color: "white",
+                      cursor: "pointer",
+                      marginRight: "6px",
+                    }}
+                  >
+                    수정
+                  </button>
+                </RenderIfLoggedIn>
+                <RenderIfLoggedIn isLoggedIn={isLoggedIn}>
+                  <button
+                    onClick={() => handleDelete(post.id)}
+                    style={{
+                      border: "none",
+                      padding: "8px",
+                      borderRadius: "6px",
+                      backgroundColor: "red",
+                      color: "white",
+                      cursor: "pointer",
+                    }}
+                  >
+                    삭제
+                  </button>
+                </RenderIfLoggedIn>
               </div>
             </div>
           </div>
