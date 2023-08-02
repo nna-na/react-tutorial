@@ -1,24 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 import { auth } from "../firebase";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setLoggedIn } from "../redux/modules/user"; // 필요한 액션 임포트
+import { useAuthenticationEffect } from "../redux/modules/useAuthenticationEffect";
 
 export default function Header() {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const user = useSelector((state) => state.user.user);
 
-  useEffect(() => {
-    // 인증 상태 변경 감지를 위해 Firebase의 onAuthStateChanged를 사용
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setIsLoggedIn(!!user); // 사용자가 로그인한 경우 isLoggedIn을 true로 설정, 로그아웃한 경우 false로 설정
-    });
+  const dispatch = useDispatch(); // useDispatch 훅을 사용하여 디스패치 함수 가져오기
 
-    // 컴포넌트 언마운트 시 인증 상태 변경 감지 정리
-    return () => unsubscribe();
-  }, []);
+  useAuthenticationEffect();
 
   const handleMainClick = () => {
     navigate("/");
@@ -36,7 +31,7 @@ export default function Header() {
     try {
       // 사용자 로그아웃 처리
       await auth.signOut();
-      setIsLoggedIn(false); // 로그아웃 상태로 설정
+      dispatch(setLoggedIn(false)); // isLoggedIn 함수 대신에 액션을 디스패치하여 상태 업데이트
       alert("로그아웃 되었습니다.");
       navigate("/");
     } catch (error) {

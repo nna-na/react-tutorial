@@ -5,14 +5,13 @@ import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { setUser, setLoggedIn } from "../redux/modules/user";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser, setLoggedIn, setLoading } from "../redux/modules/user";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoading } = useSelector((state) => state.user); // isLoading 상태 가져오기
 
   const navigate = useNavigate();
 
@@ -43,14 +42,10 @@ export default function Login() {
     }
 
     try {
-      setIsLoading(true);
+      setLoading(true);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       alert("환영합니다!", userCredential.user);
 
-      // 로그인 상태 변경
-      setIsLoggedIn(true);
-
-      // 로그인 상태를 Redux 스토어에 저장
       dispatch(setUser(userCredential.user)); // user 정보를 setUser 액션을 이용해 Redux 스토어에 저장
       dispatch(setLoggedIn(true)); // isLoggedIn 상태를 true로 변경
 
@@ -58,9 +53,15 @@ export default function Login() {
     } catch (error) {
       const errorCode = error.code;
       const errorMessage = error.message;
-      alert("이메일 혹은 비밀번호가 일치하지 않습니다.", errorCode, errorMessage);
+      if (errorCode === "auth/user-not-found") {
+        alert("사용자가 존재하지 않습니다. 회원가입을 진행해주세요.");
+      } else if (errorCode === "auth/wrong-password") {
+        alert("비밀번호가 일치하지 않습니다.");
+      } else {
+        alert(errorMessage);
+      }
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 

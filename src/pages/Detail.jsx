@@ -5,7 +5,6 @@ import Container from "../common/Container";
 import { useDispatch, useSelector } from "react-redux";
 import { deletePost } from "../redux/modules/posts";
 import { RenderIfLoggedIn } from "../redux/modules/renderUtils";
-import { checkUserAuthorization } from "../redux/modules/authUtils";
 
 export default function Detail() {
   const posts = useSelector((state) => state.posts);
@@ -24,25 +23,24 @@ export default function Detail() {
     return <div>존재하지 않는 게시물입니다.</div>;
   }
 
-  // 해당 게시물의 수정 페이지로 이동 (수정 버튼 클릭 시 호출)
+  // 게시물의 저자와 로그인 사용자가 일치하는지 확인
+  const isUserAuthor = user.uid === post.author;
+
+  // 수정 버튼 클릭 시 동작
   const handleEditClick = () => {
-    if (isLoggedIn) {
-      if (checkUserAuthorization(user, post.author, navigate)) {
-        navigate(`/edit/${post.id}`);
-      }
+    if (isLoggedIn && isUserAuthor) {
+      navigate(`/edit/${post.id}`);
     }
   };
 
-  // 해당 게시물 삭제 (삭제 버튼 클릭 시 호출)
+  // 삭제 버튼 클릭 시 동작
   const handleDelete = () => {
-    if (isLoggedIn) {
-      if (checkUserAuthorization(user, post.author, navigate)) {
-        const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
-        if (confirmDelete) {
-          dispatch(deletePost(post.id));
-          navigate("/");
-          alert("삭제되었습니다.");
-        }
+    if (isLoggedIn && isUserAuthor) {
+      const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
+      if (confirmDelete) {
+        dispatch(deletePost(post.id));
+        navigate("/");
+        alert("삭제되었습니다.");
       }
     }
   };
@@ -78,35 +76,37 @@ export default function Detail() {
           }}
         >
           <RenderIfLoggedIn isLoggedIn={isLoggedIn}>
-            <button
-              onClick={handleEditClick}
-              style={{
-                border: "none",
-                padding: "8px",
-                borderRadius: "6px",
-                backgroundColor: "orange",
-                color: "white",
-                cursor: "pointer",
-                marginRight: "6px",
-              }}
-            >
-              수정
-            </button>
-          </RenderIfLoggedIn>
-          <RenderIfLoggedIn isLoggedIn={isLoggedIn}>
-            <button
-              onClick={handleDelete}
-              style={{
-                border: "none",
-                padding: "8px",
-                borderRadius: "6px",
-                backgroundColor: "red",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              삭제
-            </button>
+            {isUserAuthor && (
+              <>
+                <button
+                  onClick={handleEditClick}
+                  style={{
+                    border: "none",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    backgroundColor: "orange",
+                    color: "white",
+                    cursor: "pointer",
+                    marginRight: "6px",
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  onClick={handleDelete}
+                  style={{
+                    border: "none",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    backgroundColor: "red",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  삭제
+                </button>
+              </>
+            )}
           </RenderIfLoggedIn>
         </div>
       </Container>

@@ -8,14 +8,14 @@ export const checkIfLoggedIn = (isLoggedIn, navigate) => {
   return true;
 };
 
-export const checkUserAuthorization = (isLoggedIn, user, postAuthor, navigate) => {
+export const checkUserAuthorization = (isLoggedIn, user, author, navigate) => {
   if (!checkIfLoggedIn(isLoggedIn, navigate)) {
     return false;
   }
 
   const userIdentifier = user?.email || user?.uid;
 
-  if (postAuthor !== userIdentifier) {
+  if (author !== userIdentifier) {
     alert("권한이 없습니다.");
     return false;
   }

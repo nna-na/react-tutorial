@@ -6,12 +6,12 @@ import { auth } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { setLoading } from "../redux/modules/user";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const onChange = (event) => {
@@ -54,7 +54,7 @@ export default function Signup() {
     }
 
     try {
-      setIsLoading(true);
+      setLoading(true);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       setTimeout(() => {
         alert("회원가입이 완료되었습니다!", userCredential.user);
@@ -68,7 +68,7 @@ export default function Signup() {
         alert("회원가입이 완료되지 않았습니다. 형식에 맞게 다시 작성해주세요.");
       }
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 

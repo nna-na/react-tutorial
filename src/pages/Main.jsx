@@ -1,13 +1,12 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
 import { useDispatch, useSelector } from "react-redux";
 import { deletePost } from "../redux/modules/posts";
-import { setUser, setLoggedIn } from "../redux/modules/user"; // 추가된 import
-import { auth } from "../firebase";
 import { RenderIfLoggedIn } from "../redux/modules/renderUtils";
 import { checkUserAuthorization } from "../redux/modules/authUtils";
+import { useAuthenticationEffect } from "../redux/modules/useAuthenticationEffect";
 
 export default function Main() {
   // Redux 스토어의 상태(posts 배열)를 가져온다.
@@ -23,21 +22,7 @@ export default function Main() {
   // React Router의 navigate 함수를 가져온다.
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // 인증 상태 변경 감지를 위해 Firebase의 onAuthStateChanged를 사용
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      // 사용자 로그인 상태를 Redux 스토어에 업데이트
-      dispatch(setLoggedIn(!!user)); // 사용자가 로그인한 경우 true, 로그아웃한 경우 false
-
-      if (user) {
-        // 사용자가 로그인한 경우, 사용자 정보를 Redux 스토어에 업데이트
-        dispatch(setUser(user));
-      }
-    });
-
-    // 컴포넌트 언마운트 시 인증 상태 변경 감지 정리
-    return () => unsubscribe();
-  }, [dispatch]);
+  useAuthenticationEffect();
 
   // 새로운 게시물 추가 페이지로 이동
   const handleCreateClick = () => {
@@ -160,36 +145,42 @@ export default function Main() {
               }}
             >
               <div>
+                {post?.author || user.uid}
+                <br />
+                <br />
                 <RenderIfLoggedIn isLoggedIn={isLoggedIn}>
-                  <button
-                    onClick={() => handleEditClick(post.id)}
-                    style={{
-                      border: "none",
-                      padding: "8px",
-                      borderRadius: "6px",
-                      backgroundColor: "orange",
-                      color: "white",
-                      cursor: "pointer",
-                      marginRight: "6px",
-                    }}
-                  >
-                    수정
-                  </button>
-                </RenderIfLoggedIn>
-                <RenderIfLoggedIn isLoggedIn={isLoggedIn}>
-                  <button
-                    onClick={() => handleDelete(post.id)}
-                    style={{
-                      border: "none",
-                      padding: "8px",
-                      borderRadius: "6px",
-                      backgroundColor: "red",
-                      color: "white",
-                      cursor: "pointer",
-                    }}
-                  >
-                    삭제
-                  </button>
+                  {/* 수정/삭제 버튼은 저자와 로그인 사용자가 일치할 때만 표시 */}
+                  {user.uid === post.author && (
+                    <>
+                      <button
+                        onClick={() => handleEditClick(post.id)}
+                        style={{
+                          border: "none",
+                          padding: "8px",
+                          borderRadius: "6px",
+                          backgroundColor: "orange",
+                          color: "white",
+                          cursor: "pointer",
+                          marginRight: "6px",
+                        }}
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        style={{
+                          border: "none",
+                          padding: "8px",
+                          borderRadius: "6px",
+                          backgroundColor: "red",
+                          color: "white",
+                          cursor: "pointer",
+                        }}
+                      >
+                        삭제
+                      </button>
+                    </>
+                  )}
                 </RenderIfLoggedIn>
               </div>
             </div>
