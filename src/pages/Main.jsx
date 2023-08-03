@@ -2,19 +2,25 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
-import { useDispatch, useSelector } from "react-redux";
-import { deletePost } from "../redux/modules/posts";
+import { useSelector } from "react-redux";
 import { RenderIfLoggedIn } from "../redux/modules/renderUtils";
 import { checkUserAuthorization } from "../redux/modules/authUtils";
-import { useAuthenticationEffect } from "../redux/modules/useAuthenticationEffect";
+import { useAuthenticationEffect } from "../redux/utils/useAuthenticationEffect";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import axios from "axios";
 
 export default function Main() {
-  const posts = useSelector((state) => state.posts);
+  const navigate = useNavigate();
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const user = useSelector((state) => state.user.user);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   useAuthenticationEffect();
+
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isError, error } = useQuery("posts", async () => {
+    const response = await axios.get("http://localhost:3001/posts");
+    return response.data;
+  });
 
   const handleCreateClick = () => {
     if (isLoggedIn) {
@@ -26,7 +32,7 @@ export default function Main() {
   };
 
   const handleEditClick = (postId) => {
-    const selectedPost = posts.find((post) => post.id === postId);
+    const selectedPost = data.find((post) => post.id === postId);
     if (isLoggedIn) {
       const postAuthor = selectedPost.author;
 
@@ -36,8 +42,19 @@ export default function Main() {
     }
   };
 
+  const deleteMutation = useMutation(
+    async (postId) => {
+      await axios.delete(`http://localhost:3001/posts/${postId}`);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("posts");
+      },
+    }
+  );
+
   const handleDelete = (postId) => {
-    const selectedPost = posts.find((post) => post.id === postId);
+    const selectedPost = data.find((post) => post.id === postId);
 
     if (isLoggedIn) {
       const postAuthor = selectedPost.author;
@@ -45,8 +62,7 @@ export default function Main() {
       if (checkUserAuthorization(isLoggedIn, user, postAuthor, navigate)) {
         const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
         if (confirmDelete) {
-          dispatch(deletePost(postId));
-          navigate("/");
+          deleteMutation.mutate(postId);
           alert("삭제되었습니다.");
         }
       }
@@ -81,89 +97,95 @@ export default function Main() {
           </RenderIfLoggedIn>
         </div>
 
-        {posts?.map((post) => (
-          <div
-            key={post.id}
-            style={{
-              backgroundColor: "#EEEEEE",
-              height: "100px",
-              borderRadius: "24px",
-              marginBottom: "12px",
-              display: "flex",
-              padding: "12px 16px 12px 16px",
-            }}
-          >
+        {isLoading ? (
+          <div>로딩중입니다</div>
+        ) : isError ? (
+          <div>{error.message}</div>
+        ) : (
+          data.map((post) => (
             <div
-              onClick={() => {
-                navigate(`/detail/${post.id}`);
-              }}
+              key={post.id}
               style={{
-                flex: 4,
-                borderRight: "1px solid lightgrey",
-                cursor: "pointer",
+                backgroundColor: "#EEEEEE",
+                height: "100px",
+                borderRadius: "24px",
+                marginBottom: "12px",
+                display: "flex",
+                padding: "12px 16px 12px 16px",
               }}
             >
-              <h2>{post?.title}</h2>
-              <p
+              <div
+                onClick={() => {
+                  navigate(`/detail/${post.id}`);
+                }}
                 style={{
-                  width: "300px",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
+                  flex: 4,
+                  borderRight: "1px solid lightgrey",
+                  cursor: "pointer",
                 }}
               >
-                {post?.content}
-              </p>
-            </div>
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "end",
-                justifyContent: "space-around",
-                gap: "12px",
-              }}
-            >
-              <div>
-                {post?.author || (user && user.uid)}
-                <br />
-                <br />
-                {isLoggedIn && user.email === post.author && (
-                  <>
-                    <button
-                      onClick={() => handleEditClick(post.id)}
-                      style={{
-                        border: "none",
-                        padding: "8px",
-                        borderRadius: "6px",
-                        backgroundColor: "orange",
-                        color: "white",
-                        cursor: "pointer",
-                        marginRight: "6px",
-                      }}
-                    >
-                      수정
-                    </button>
-                    <button
-                      onClick={() => handleDelete(post.id)}
-                      style={{
-                        border: "none",
-                        padding: "8px",
-                        borderRadius: "6px",
-                        backgroundColor: "red",
-                        color: "white",
-                        cursor: "pointer",
-                      }}
-                    >
-                      삭제
-                    </button>
-                  </>
-                )}
+                <h2>{post?.title}</h2>
+                <p
+                  style={{
+                    width: "300px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {post?.content}
+                </p>
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "end",
+                  justifyContent: "space-around",
+                  gap: "12px",
+                }}
+              >
+                <div>
+                  {post?.author || (user && user.uid)}
+                  <br />
+                  <br />
+                  {isLoggedIn && user.email === post.author && (
+                    <>
+                      <button
+                        onClick={() => handleEditClick(post.id)}
+                        style={{
+                          border: "none",
+                          padding: "8px",
+                          borderRadius: "6px",
+                          backgroundColor: "orange",
+                          color: "white",
+                          cursor: "pointer",
+                          marginRight: "6px",
+                        }}
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        style={{
+                          border: "none",
+                          padding: "8px",
+                          borderRadius: "6px",
+                          backgroundColor: "red",
+                          color: "white",
+                          cursor: "pointer",
+                        }}
+                      >
+                        삭제
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </Container>
     </>
   );

@@ -4,11 +4,14 @@ import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 // modules/posts.js에서 추출한 posts 리듀서를 가져온다.
 import posts from "./redux/modules/posts";
 
 import userReducer from "./redux/modules/user";
+
+const queryClient = new QueryClient();
 
 // 2. Redux의 configureStore 함수를 사용하여 스토어를 생성한다.
 const store = configureStore({
@@ -22,11 +25,13 @@ const store = configureStore({
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    {/* 4. Redux의 스토어를 전역으로 제공하기 위해 Provider로 App을 감싸준다. */}
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
+    <QueryClientProvider client={queryClient}>
+      {/* 4. Redux의 스토어를 전역으로 제공하기 위해 Provider로 App을 감싸준다. */}
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </QueryClientProvider>
   </React.StrictMode>
 );

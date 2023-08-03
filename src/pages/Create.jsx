@@ -2,49 +2,62 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
-import { nanoid } from "nanoid";
-import { useDispatch, useSelector } from "react-redux";
-import { addPost } from "../redux/modules/posts";
+import { useSelector } from "react-redux";
+import { useMutation, useQueryClient } from "react-query";
+import axios from "axios";
+import { validateInputAndAlert } from "../redux/utils/validationUtils";
 
 export default function Create() {
-  const dispatch = useDispatch();
+  const queryClient = useQueryClient(); // QueryClient 인스턴스 생성
   const navigate = useNavigate();
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const user = useSelector((state) => state.user.user);
 
-  const handleAddClick = (title, content, author) => {
-    // 새로운 게시물 객체 생성
-    const newPost = {
-      id: nanoid(),
+  // useMutation을 통해 새로운 데이터 추가 기능을 설정
+  const addData = useMutation(
+    async (newData) => {
+      // axios를 사용하여 POST 요청을 보냄
+      await axios.post("http://localhost:3001/posts", newData);
+    },
+    {
+      onSuccess: () => {
+        // 데이터 추가 성공 시, "posts" 쿼리를 다시 불러오기 위해 invalidateQueries 호출
+        queryClient.invalidateQueries("posts");
+      },
+    }
+  );
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const title = e.target.title.value;
+    const content = e.target.content.value;
+
+    if (validateInputAndAlert(title, content)) {
+      return; // 유효성 검사 실패 시 중단
+    }
+
+    let author;
+
+    if (isLoggedIn && user) {
+      author = user.email || user.uid;
+    } else {
+      author = "익명";
+    }
+
+    const newData = {
       title: title,
       content: content,
       author: author,
     };
 
-    // addPost 액션을 dispatch하여 새로운 게시물을 추가
-    dispatch(addPost(newPost));
-
-    // 추가 후 메인 페이지로 이동
-    navigate("/");
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // 이벤트 객체(e)의 target 속성을 통해 입력 폼의 title(input)과 content(textarea) 요소에 접근하여
-    // 사용자가 입력한 값을 가져오는 부분
-    const title = e.target.title.value;
-    const content = e.target.content.value;
-    let author;
-
-    if (isLoggedIn && user) {
-      // 사용자가 로그인한 경우, 사용자의 이메일 주소 또는 ID를 author에 저장
-      author = user.email || user.uid;
-    } else {
-      // 사용자가 로그인하지 않은 경우, "익명"으로 설정
-      author = "익명";
+    // addData.mutate를 사용하여 새로운 데이터 추가 요청 보내기
+    try {
+      addData.mutate(newData);
+      // 추가 후 메인 페이지로 이동
+      navigate("/");
+    } catch (error) {
+      console.error("Error adding data:", error);
     }
-
-    handleAddClick(title, content, author); // 폼 제출 시 handleAddClick 함수 호출
   };
 
   return (

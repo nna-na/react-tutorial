@@ -1,8 +1,7 @@
-// useAuthenticationEffect.js
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { auth } from "../../firebase";
-import { setLoggedIn, setUser } from "../../redux/modules/user";
+import { setLoggedIn, setUser } from "../modules/user";
 
 export function useAuthenticationEffect() {
   const dispatch = useDispatch();

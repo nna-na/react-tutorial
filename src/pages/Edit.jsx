@@ -2,41 +2,54 @@ import React, { Fragment } from "react";
 import Header from "../common/Header";
 import Container from "../common/Container";
 import { useParams, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { updatePost } from "../redux/modules/posts";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import axios from "axios";
+import { validateInputAndAlert } from "../redux/utils/validationUtils";
 
 export default function Edit() {
-  const posts = useSelector((state) => state.posts);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // 동적 변수로 지정한(URL) id를 가져올 수 있다.
   const { id } = useParams();
 
-  // id에 해당하는 게시물을 찾아온다.
-  const post = posts.find((post) => post.id === id);
+  const queryClient = useQueryClient();
+
+  // 해당 id의 게시물을 가져오는 React Query 쿼리
+  const { data: post } = useQuery(["post", id], async () => {
+    const response = await axios.get(`http://localhost:3001/posts/${id}`);
+    return response.data;
+  });
+
+  // 게시물 수정을 위한 Mutation
+  const updateMutation = useMutation(
+    async (updatedPost) => {
+      await axios.put(`http://localhost:3001/posts/${id}`, updatedPost);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["post", id]);
+        queryClient.invalidateQueries("posts");
+        window.alert("수정되었습니다.");
+        navigate("/");
+      },
+    }
+  );
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
 
-    // state를 사용하여 기본값 설정
     const title = e.target.title.value;
     const content = e.target.content.value;
 
-    // post 객체의 모든 속성, title, content를 객체에 추가
+    if (validateInputAndAlert(title, content)) {
+      return; // 유효성 검사 실패 시 중단
+    }
+
     const updatedPost = { ...post, title, content };
 
-    // updatePost 액션을 디스패치하여 리덕스 스토어의 상태를 업데이트한다.
-    dispatch(updatePost(updatedPost));
-
-    // 수정 완료 알림창
-    window.alert("수정되었습니다.");
-
-    // 수정 후 자동으로 메인페이지로 이동
-    navigate("/");
+    updateMutation.mutate(updatedPost);
   };
 
-  // post가 존재하지 않는 경우, 메시지를 화면에 표시하도록 처리
   if (!post) {
     return (
       <Fragment>
@@ -64,7 +77,7 @@ export default function Edit() {
           <div>
             <input
               name="title"
-              defaultValue={post.title} // 기존 데이터의 title 설정
+              defaultValue={post.title}
               placeholder="제목"
               style={{
                 width: "100%",
@@ -84,7 +97,7 @@ export default function Edit() {
           >
             <textarea
               name="content"
-              defaultValue={post.content} // 기존 데이터의 content 설정
+              defaultValue={post.content}
               placeholder="내용"
               style={{
                 resize: "none",

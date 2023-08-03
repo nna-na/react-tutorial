@@ -1,10 +1,34 @@
 {
   "posts": [
     {
-      "id": 1,
-      "title": "제목예시",
-      "content": "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Lorem ipsum dolor, sit amet consectetur adipisicing elit.Lorem ipsum dolor, sit amet consectetur adipisicing elit.Lorem ipsum dolor, sit amet consectetur adipisicing elit.",
-      "author": "abc@naver.com"
+      "id": "1",
+      "title": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      "content": "Pellentesque a purus sapien. Sed est sapien, dignissim eu bibendum at, dictum eget tellus. Vestibulum orci dolor, mollis in iaculis sed, iaculis quis tellus. Ut ultrices felis vel orci finibus mollis.",
+      "author": "작성자1"
+    },
+    {
+      "id": "2",
+      "title": "Nullam iaculis rutrum mauris, nec fringilla turpis dapibus ac.",
+      "content": "Pellentesque sit amet tortor et lectus viverra hendrerit ut quis nunc. Nullam a pharetra sapien. Cras eget risus nunc. Ut tincidunt massa at tortor mattis congue.",
+      "author": "작성자2"
+    },
+    {
+      "id": "3",
+      "title": "Nam facilisis dui nec nulla porta, sit amet pretium leo lacinia.",
+      "content": "Praesent nec facilisis quam. Aenean ac eros mi. Aliquam at odio eget nibh auctor mattis. Praesent ac justo feugiat, blandit justo quis, lobortis purus.",
+      "author": "작성자3"
+    },
+    {
+      "title": "test bbb",
+      "content": "bbbbbbbbbbbbbbbbbbb",
+      "author": "bbb@gmail.com",
+      "id": "0F3cOpJ"
+    },
+    {
+      "title": "test aaa",
+      "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "author": "aaa@gmail.com",
+      "id": "y_wrhCG"
     }
   ]
 }

@@ -4,7 +4,7 @@ import { FaHome } from "react-icons/fa";
 import { auth } from "../firebase";
 import { useSelector, useDispatch } from "react-redux";
 import { setLoggedIn } from "../redux/modules/user"; // 필요한 액션 임포트
-import { useAuthenticationEffect } from "../redux/modules/useAuthenticationEffect";
+import { useAuthenticationEffect } from "../redux/utils/useAuthenticationEffect";
 
 export default function Header() {
   const navigate = useNavigate();

@@ -2,48 +2,56 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../common/Header";
 import Container from "../common/Container";
-import { useDispatch, useSelector } from "react-redux";
-import { deletePost } from "../redux/modules/posts";
+import { useSelector } from "react-redux";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import axios from "axios";
+import { checkUserAuthorization } from "../redux/modules/authUtils";
 import { RenderIfLoggedIn } from "../redux/modules/renderUtils";
 
 export default function Detail() {
-  const posts = useSelector((state) => state.posts);
+  const navigate = useNavigate();
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const user = useSelector((state) => state.user.user);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const { id } = useParams();
 
-  // 게시물을 아이디로 조회합니다.
-  const post = posts.find((post) => post.id === id);
+  const queryClient = useQueryClient();
 
-  // 게시물이 존재하지 않는 경우 처리
+  // 해당 id의 게시물을 가져오는 React Query 쿼리
+  const { data: post } = useQuery(["post", id], async () => {
+    const response = await axios.get(`http://localhost:3001/posts/${id}`);
+    return response.data;
+  });
+
+  // 게시물 삭제를 위한 Mutation
+  const deleteMutation = useMutation(
+    async () => {
+      await axios.delete(`http://localhost:3001/posts/${id}`);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["post", id]);
+        queryClient.invalidateQueries("posts");
+        alert("삭제되었습니다.");
+        navigate("/");
+      },
+    }
+  );
+
+  const handleDelete = () => {
+    if (isLoggedIn && checkUserAuthorization(isLoggedIn, user, post?.author, navigate)) {
+      const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
+      if (confirmDelete) {
+        deleteMutation.mutate();
+      }
+    }
+  };
+
   if (!post) {
     return <div>존재하지 않는 게시물입니다.</div>;
   }
 
-  // 게시물의 저자와 로그인 사용자가 일치하는지 확인
-  const isUserAuthor = user.uid === post.author;
-
-  // 수정 버튼 클릭 시 동작
-  const handleEditClick = () => {
-    if (isLoggedIn && isUserAuthor) {
-      navigate(`/edit/${post.id}`);
-    }
-  };
-
-  // 삭제 버튼 클릭 시 동작
-  const handleDelete = () => {
-    if (isLoggedIn && isUserAuthor) {
-      const confirmDelete = window.confirm("정말로 삭제하시겠습니까?");
-      if (confirmDelete) {
-        dispatch(deletePost(post.id));
-        navigate("/");
-        alert("삭제되었습니다.");
-      }
-    }
-  };
+  const isUserAuthor = user.email === post.author;
 
   return (
     <>
@@ -79,7 +87,7 @@ export default function Detail() {
             {isUserAuthor && (
               <>
                 <button
-                  onClick={handleEditClick}
+                  onClick={() => navigate(`/edit/${post.id}`)}
                   style={{
                     border: "none",
                     padding: "8px",
@@ -88,6 +96,7 @@ export default function Detail() {
                     color: "white",
                     cursor: "pointer",
                     marginRight: "6px",
+                    display: isUserAuthor ? "block" : "none",
                   }}
                 >
                   수정
@@ -101,6 +110,7 @@ export default function Detail() {
                     backgroundColor: "red",
                     color: "white",
                     cursor: "pointer",
+                    display: isUserAuthor ? "block" : "none",
                   }}
                 >
                   삭제
