@@ -26,7 +26,6 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      {/* 4. Redux의 스토어를 전역으로 제공하기 위해 Provider로 App을 감싸준다. */}
       <Provider store={store}>
         <BrowserRouter>
           <App />

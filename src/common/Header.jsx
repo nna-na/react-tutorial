@@ -75,7 +75,7 @@ export default function Header() {
           </>
         ) : (
           <>
-            <h5>환영합니다, {user.email}님</h5>
+            <h5 style={{ color: "grey" }}>환영합니다, {user.email}님</h5>
             <h4 onClick={handleLogoutClick} style={{ cursor: "pointer" }}>
               로그아웃
             </h4>

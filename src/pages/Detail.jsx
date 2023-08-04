@@ -30,7 +30,6 @@ export default function Detail() {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(["post", id]);
         queryClient.invalidateQueries("posts");
         alert("삭제되었습니다.");
         navigate("/");
@@ -51,7 +50,7 @@ export default function Detail() {
     return <div>존재하지 않는 게시물입니다.</div>;
   }
 
-  const isUserAuthor = user.email === post.author;
+  const isUserAuthor = user?.email === post?.author;
 
   return (
     <>

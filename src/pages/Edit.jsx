@@ -27,7 +27,6 @@ export default function Edit() {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(["post", id]);
         queryClient.invalidateQueries("posts");
         window.alert("수정되었습니다.");
         navigate("/");
